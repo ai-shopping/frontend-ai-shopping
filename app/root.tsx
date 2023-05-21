@@ -71,7 +71,7 @@ export async function loader({request, context}: LoaderArgs) {
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
-  const locale = data.data.selectedLocale ?? DEFAULT_LOCALE;
+  const locale = data.selectedLocale ?? DEFAULT_LOCALE;
   const hasUserConsent = true;
 
   useAnalytics(hasUserConsent, locale);
@@ -87,7 +87,7 @@ export default function App() {
       </head>
       <body>
         <Layout
-          layout={data.data.layout as LayoutData}
+          layout={data.layout as LayoutData}
           key={`${locale.language}-${locale.country}`}
         >
           <Outlet />
