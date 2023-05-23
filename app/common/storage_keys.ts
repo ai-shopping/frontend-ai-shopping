@@ -1,0 +1,6 @@
+export const TOKEN = "token"
+export const ACCESS_TOKEN = "access_token"
+export const REFRESH_TOKEN = "refresh_token"
+export const PHONE_NUMBER = "phone"
+export const AUTH_PENDDING = "isAuthPending"
+export const LAST_PAYMENT = "lastPay"
