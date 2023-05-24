@@ -180,3 +180,133 @@ shop-pay-button {
     }
   }
 }
+
+
+/* ================================================================= */
+
+
+html {
+  font-size: 14px !important;
+}
+
+h1 {
+  font-size: 2rem !important;
+}
+
+h2 {
+  font-size: 1.8rem !important;
+}
+
+h3 {
+  font-size: 1.6rem !important;
+}
+
+h4 {
+  font-size: 1.5rem !important;
+}
+
+h5 {
+  font-size: 1.3rem !important;
+}
+
+h6 {
+  font-size: 1.1rem !important;
+}
+
+a, p {
+  font-size: 1rem !important;
+}
+
+
+.header-logo {
+  width: 40px;
+  height: 44px;
+}
+
+.welcome {
+  text-align: center;
+  font-weight: bold;
+}
+
+.chatbox-container {
+  position: relative;
+  width: 940px;
+  height: 316.14px;
+  border: 1px solid #28A76C;
+  border-radius: 10px;
+
+}
+
+
+.message-list {
+  height: 80%;
+}
+
+.message {
+  border-radius: 10px;
+  height: fit-content;
+  text-align: left;
+  padding: 10px;
+  margin: 5px;
+}
+
+.head-message {
+  display: flex;
+  align-items: center;
+  vertical-align: center;
+}
+
+.user-message {
+  background: #FFFFFF;
+  border: 1px solid #28A76C;
+
+}
+
+.user-message h6 {
+  color: #28A76C;
+  line-height: 0;
+  margin: 0;
+}
+
+.message img {
+  width: 30px;
+  height: 30px;
+}
+
+.user-message p {
+  color: #222222;
+}
+
+
+.bot-message {
+  background-color: #28A76C;
+  color: #fff;
+}
+
+.bot-message h6 {
+  line-height: 0;
+  margin: 0;
+}
+
+
+.input-container {
+  position: relative;
+  padding: 5px;
+}
+
+.input-container input {
+  position: relative;
+  height: 49px;
+  border: 1px solid #099A57;
+  border-radius: 10px;
+  width: 100%;
+}
+
+.input-container button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #fff;
+  border: none;
+}
+
