@@ -1,15 +1,21 @@
 import userIcon from "../assets/icons/user.svg"
 import botLogo from "../assets/icons/bot-logo.svg"
 
-const Message = ({ text, timestamp, isUserMessage }) => {
-  if (isUserMessage) {
+interface MessageProps {
+  text:string;
+  timestamp:number;
+  isUserMessage:boolean;
+}
+
+const Message = (props: MessageProps) => {
+  if (props.isUserMessage) {
     return (
       <div className={`message user-message`}>
         <div className="d-flex align-items-center my-2">
           <img src={userIcon} className="mx-2" />
           <h6 className="d-inline">Your question: </h6>
         </div>
-        <p className="message-text px-3">{text}</p>
+        <p className="message-text px-3">{props.text}</p>
       </div>
     );
   } else {
@@ -19,7 +25,7 @@ const Message = ({ text, timestamp, isUserMessage }) => {
           <img src={botLogo} className="mx-2" />
           <h6 className="d-inline">Carl: </h6>
         </div>
-        <p className="message-text px-3">{text}</p>
+        <p className="message-text px-3">{props.text}</p>
       </div>
     );
   }

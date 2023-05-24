@@ -7,14 +7,14 @@ import { Scrollbars } from 'react-custom-scrollbars';
 
 
 const ChatBox = () => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [products, setProducts] = useState([]);
   const messageListRef = useRef(null);
 
   const handleSendMessage = () => {
     if (currentMessage !== '') {
-      const newMessage = {
+      const newMessage: any = {
         text: currentMessage,
         timestamp: new Date().getTime(),
         isUserMessage: true,
@@ -30,15 +30,15 @@ const ChatBox = () => {
   //   messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
   // }, [messages]);
 
-  useEffect(() => {
-    // Generate sample products
-    const newProducts = Array.from({ length: 8 }, (_, index) => ({
-      id: index + 1,
-      name: `Product ${index + 1}`,
-    }));
+  // useEffect(() => {
+  //   // Generate sample products
+  //   const newProducts = Array.from({ length: 8 }, (_, index) => ({
+  //     id: index + 1,
+  //     name: `Product ${index + 1}`,
+  //   }));
 
-    setProducts(newProducts);
-  }, []);
+  //   setProducts([]);
+  // }, []);
 
   return (
     <>
@@ -46,7 +46,7 @@ const ChatBox = () => {
         <div className="chatbox-container">
           <div className="message-list">
           <Scrollbars style={{ height: '250px' }}>
-            {messages.map((message, index) => (
+            {messages.map((message: any, index: number) => (
               <Message
                 key={index}
                 text={message.text}
@@ -72,7 +72,8 @@ const ChatBox = () => {
         </div>
       </div>
 
-      <div className='container mt-3 p-3'>
+      {/* @TODO: get product list for preview in store */}
+      {/* <div className='container mt-3 p-3'>
         <div className="product-list">
           <div className='row'>
             {products.map((product) => (
@@ -82,7 +83,7 @@ const ChatBox = () => {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
 
     </>
