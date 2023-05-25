@@ -14,3 +14,4 @@ services:
 networks: 
   services:
     name: ${APP_NAME:-smartshopping}_network
+    external: true
