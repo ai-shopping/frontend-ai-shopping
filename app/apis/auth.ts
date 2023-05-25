@@ -1,5 +1,6 @@
-import { getAuthData } from "~/common/helper";
+import { getAuthData, setAuthData } from "~/common/helper";
 import { POST } from "~/common/requests";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "~/common/storage_keys";
 import AuthResponseDto from "~/data/models/auth_response_dto";
 
 export async function getAccessToken() {
@@ -10,12 +11,17 @@ export async function getAccessToken() {
     if (response?.status === 200) {
         let data = await response.json<AuthResponseDto>();
 
+        let mapData = new Map()
+        mapData.set(ACCESS_TOKEN,data.access_token)
+        mapData.set(REFRESH_TOKEN,data.refresh_token)
+        setAuthData(mapData)
+
         return data.access_token;
     }
 }
 
 export async function refreshToken() {
-    let storageItems = getAuthData(["refresh_token"])
+    let storageItems = getAuthData([REFRESH_TOKEN])
     let response = await POST(`${BOT_URL}/api/v1/token/refresh?refresh_token=${storageItems.get("refresh_token")}`, null);
 
     if (response?.status === 200) {
