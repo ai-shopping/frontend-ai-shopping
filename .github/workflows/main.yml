@@ -3,7 +3,7 @@ name: Deploy on server
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
@@ -11,17 +11,17 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
     - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.7.0
+      uses: webfactory/ssh-agent@v0.5.0
       with:
           ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
     - name: Deploy to Server
       run: |
         ssh -o StrictHostKeyChecking=no mojtaba@95.216.34.252 <<EOF
-          cd /apps/shopify/shopify-storefront
+          cd /path/to/your/project
           git pull
           docker-compose down
           docker-compose build
