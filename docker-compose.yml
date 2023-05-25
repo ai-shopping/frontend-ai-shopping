@@ -6,6 +6,11 @@ services:
     container_name: frontend
     working_dir: /app
     command: npm run preview
+    restart: on-failure
     ports:
       - "3000:3000"
-
+    networks:
+      - services
+networks: 
+  services:
+    name: ${APP_NAME:-smartshopping}_network
