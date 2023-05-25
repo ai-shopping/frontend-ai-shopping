@@ -21,7 +21,7 @@ jobs:
     - name: Deploy to Server
       run: |
         ssh -o StrictHostKeyChecking=no mojtaba@95.216.34.252 <<EOF
-          cd /path/to/your/project
+          cd /apps/shopify/frontend-ai-shopping
           git pull
           docker-compose down
           docker-compose build
