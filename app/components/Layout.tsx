@@ -24,13 +24,13 @@ import {
 import headerLogo from "../assets/icons/header-logo.svg"
 import desktopPerson from "../assets/icons/Desktop-person.svg"
 import desktopVector from "../assets/icons/Desktop-Vector.svg"
-import {useParams, Form, Await, useMatches} from '@remix-run/react';
-import {useWindowScroll} from 'react-use';
-import {Disclosure} from '@headlessui/react';
-import {Suspense, useEffect, useMemo} from 'react';
-import {useIsHydrated} from '~/hooks/useIsHydrated';
-import {useCartFetchers} from '~/hooks/useCartFetchers';
-import type {LayoutData} from '../root';
+import { useParams, Form, Await, useMatches } from '@remix-run/react';
+import { useWindowScroll } from 'react-use';
+import { Disclosure } from '@headlessui/react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useIsHydrated } from '~/hooks/useIsHydrated';
+import { useCartFetchers } from '~/hooks/useCartFetchers';
+import type { LayoutData } from '../root';
 
 export function Layout({
   children,
@@ -60,8 +60,9 @@ export function Layout({
   );
 }
 
-function Header({title, menu}: {title: string; menu?: EnhancedMenu}) {
+function Header({ title, menu }: { title: string; menu?: EnhancedMenu }) {
   const isHome = useIsHomePath();
+  const [isMobile, setIsMobile] = useState(false);
 
   const {
     isOpen: isCartOpen,
@@ -81,6 +82,16 @@ function Header({title, menu}: {title: string; menu?: EnhancedMenu}) {
   useEffect(() => {
     if (isCartOpen || !addToCartFetchers.length) return;
     openCart();
+
+
+    console.log(window.innerWidth < 560)
+
+    function handleResize() {
+      setIsMobile(window.innerWidth < 560);
+      console.log(window.innerWidth < 560)
+    }
+
+    document.addEventListener('keydown', handleResize);
   }, [addToCartFetchers, isCartOpen, openCart]);
 
   return (
@@ -89,23 +100,25 @@ function Header({title, menu}: {title: string; menu?: EnhancedMenu}) {
       {menu && (
         <MenuDrawer isOpen={isMenuOpen} onClose={closeMenu} menu={menu} />
       )}
-      <DesktopHeader
+
+      {!isMobile ? <DesktopHeader
         isHome={isHome}
         title={title}
         menu={menu}
         openCart={openCart}
-      />
-      <MobileHeader
+      /> : <MobileHeader
         isHome={isHome}
         title={title}
         openCart={openCart}
         openMenu={openMenu}
-      />
+      />}
+
+
     </>
   );
 }
 
-function CartDrawer({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
+function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [root] = useMatches();
 
   return (
@@ -155,7 +168,7 @@ function MenuMobileNav({
             to={item.to}
             target={item.target}
             onClick={onClose}
-            className={({isActive}) =>
+            className={({ isActive }) =>
               isActive ? 'pb-1 border-b -mb-px' : 'pb-1'
             }
           >
@@ -187,30 +200,24 @@ function MobileHeader({
   return (
     <header
       role="banner"
-      className={`${
-        isHome
-          ? 'bg-primary/80 dark:bg-contrast/60 text-contrast dark:text-primary shadow-darkHeader'
-          : 'bg-contrast/80 text-primary'
-      } flex lg:hidden items-center h-nav sticky backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-4 px-4 md:px-8`}
+      className={`${isHome
+          ? 'bg-ligth text-contrast dark:text-primary shadow-darkHeader'
+          : 'bg-ligth text-primary'
+        } flex lg:hidden items-center h-nav sticky backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-4 px-4 md:px-8`}
     >
       <div className="flex items-center justify-start w-full gap-4">
-        <button
+        {/* <button
           onClick={openMenu}
           className="relative flex items-center justify-center w-8 h-8"
         >
-          <IconMenu />
-        </button>
+          <IconMenu color='#000'/>
+        </button> */}
         <Form
           method="get"
           action={params.locale ? `/${params.locale}/search` : '/search'}
           className="items-center gap-2 sm:flex"
         >
-          <button
-            type="submit"
-            className="relative flex items-center justify-center w-8 h-8"
-          >
-            <IconSearch />
-          </button>
+          <img src={headerLogo} alt="" className="header-logo" />
           <Input
             className={
               isHome
@@ -229,12 +236,13 @@ function MobileHeader({
         className="flex items-center self-stretch leading-[3rem] md:leading-[4rem] justify-center flex-grow w-full h-full"
         to="/"
       >
-        <Heading
-          className="font-bold text-center leading-none"
+        {/* <Heading
+          className="font-bold text-center leading-none text-black"
+          style={{fontSize:"16px"}}
           as={isHome ? 'h1' : 'h2'}
         >
-          {title}
-        </Heading>
+          CBD Smart Store
+        </Heading> */}
       </Link>
 
       <div className="flex items-center justify-end w-full gap-4">
@@ -257,91 +265,29 @@ function DesktopHeader({
   title: string;
 }) {
   const params = useParams();
-  const {y} = useWindowScroll();
+  const { y } = useWindowScroll();
 
   return <>
     <div className="top-header">
-            <div className="container">
-                <div className="row py-3">
-                    <div className="col-1">
-                       <img src={headerLogo} alt="" className="header-logo" />
-                    </div>
-                    <div className="col-10 welcome d-flex align-items-center m-0 justify-content-center">
-                    Welcome to your CBD Smart Store
-                    </div>
-                    <div className="col-1 d-flex align-items-center">                    
-                    <AccountLink />
-                    <CartCount isHome={isHome} openCart={openCart} />
-                    </div>
-                </div>
-            </div>
+      <div className="container">
+        <div className="row py-3">
+          <div className="col-1">
+            <img src={headerLogo} alt="" className="header-logo" />
+          </div>
+          <div className="col-10 welcome d-flex align-items-center m-0 justify-content-center">
+            Welcome to your CBD Smart Store
+          </div>
+          <div className="col-1 d-flex align-items-center">
+            <AccountLink />
+            <CartCount isHome={isHome} openCart={openCart} />
+          </div>
         </div>
+      </div>
+    </div>
   </>
-
-  return (
-    <header
-      role="banner"
-      className={`${
-        isHome
-          ? 'bg-primary/80 dark:bg-contrast/60 text-contrast dark:text-primary shadow-darkHeader'
-          : 'bg-contrast/80 text-primary'
-      } ${
-        !isHome && y > 50 && ' shadow-lightHeader'
-      } hidden h-nav lg:flex items-center sticky transition duration-300 backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-8 px-12 py-8`}
-    >
-      <div className="flex gap-12">
-        <Link className="font-bold" to="/" prefetch="intent">
-          {title}
-        </Link>
-        <nav className="flex gap-8">
-          {/* Top level menu items */}
-          {(menu?.items || []).map((item) => (
-            <Link
-              key={item.id}
-              to={item.to}
-              target={item.target}
-              prefetch="intent"
-              className={({isActive}) =>
-                isActive ? 'pb-1 border-b -mb-px' : 'pb-1'
-              }
-            >
-              {item.title}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      <div className="flex items-center gap-1">
-        <Form
-          method="get"
-          action={params.locale ? `/${params.locale}/search` : '/search'}
-          className="flex items-center gap-2"
-        >
-          <Input
-            className={
-              isHome
-                ? 'focus:border-contrast/20 dark:focus:border-primary/20'
-                : 'focus:border-primary/20'
-            }
-            type="search"
-            variant="minisearch"
-            placeholder="Search"
-            name="q"
-          />
-          <button
-            type="submit"
-            className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5"
-          >
-            <IconSearch />
-          </button>
-        </Form>
-        <AccountLink className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5" />
-        <CartCount isHome={isHome} openCart={openCart} />
-      </div>
-    </header>
-  );
 }
 
-function AccountLink({className}: {className?: string}) {
+function AccountLink({ className }: { className?: string }) {
   const [root] = useMatches();
   const isLoggedIn = root.data?.isLoggedIn;
   return isLoggedIn ? (
@@ -395,11 +341,10 @@ function Badge({
       <>
         <img src={desktopVector} alt="" />
         <div
-          className={`${
-            dark
+          className={`${dark
               ? 'text-primary bg-contrast dark:text-contrast dark:bg-primary'
               : 'text-contrast bg-primary'
-          } absolute bottom-1 right-1 text-[0.625rem] font-medium subpixel-antialiased h-3 min-w-[0.75rem] flex items-center justify-center leading-none text-center rounded-full w-auto px-[0.125rem] pb-px`}
+            } absolute bottom-1 right-1 text-[0.625rem] font-medium subpixel-antialiased h-3 min-w-[0.75rem] flex items-center justify-center leading-none text-center rounded-full w-auto px-[0.125rem] pb-px`}
         >
           <span>{count || 0}</span>
         </div>
@@ -425,7 +370,7 @@ function Badge({
   );
 }
 
-function Footer({menu}: {menu?: EnhancedMenu}) {
+function Footer({ menu }: { menu?: EnhancedMenu }) {
   const isHome = useIsHomePath();
   const itemsCount = menu
     ? menu?.items?.length + 1 > 4
@@ -453,7 +398,7 @@ function Footer({menu}: {menu?: EnhancedMenu}) {
   );
 }
 
-const FooterLink = ({item}: {item: EnhancedMenuItem}) => {
+const FooterLink = ({ item }: { item: EnhancedMenuItem }) => {
   if (item.to.startsWith('http')) {
     return (
       <a href={item.to} target={item.target} rel="noopener noreferrer">
@@ -469,7 +414,7 @@ const FooterLink = ({item}: {item: EnhancedMenuItem}) => {
   );
 };
 
-function FooterMenu({menu}: {menu?: EnhancedMenu}) {
+function FooterMenu({ menu }: { menu?: EnhancedMenu }) {
   const styles = {
     section: 'grid gap-4',
     nav: 'grid gap-2 pb-6',
@@ -480,7 +425,7 @@ function FooterMenu({menu}: {menu?: EnhancedMenu}) {
       {(menu?.items || []).map((item: EnhancedMenuItem) => (
         <section key={item.id} className={styles.section}>
           <Disclosure>
-            {({open}) => (
+            {({ open }) => (
               <>
                 <Disclosure.Button className="text-left md:cursor-default">
                   <Heading className="flex justify-between" size="lead" as="h3">
@@ -494,9 +439,8 @@ function FooterMenu({menu}: {menu?: EnhancedMenu}) {
                 </Disclosure.Button>
                 {item?.items?.length > 0 ? (
                   <div
-                    className={`${
-                      open ? `max-h-48 h-fit` : `max-h-0 md:max-h-fit`
-                    } overflow-hidden transition-all duration-300`}
+                    className={`${open ? `max-h-48 h-fit` : `max-h-0 md:max-h-fit`
+                      } overflow-hidden transition-all duration-300`}
                   >
                     <Suspense data-comment="This suspense fixes a hydration bug in Disclosure.Panel with static prop">
                       <Disclosure.Panel static>
