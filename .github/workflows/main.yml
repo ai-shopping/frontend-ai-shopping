@@ -1,0 +1,29 @@
+name: Deploy on server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+    - name: Deploy to Server
+      run: |
+        ssh -o StrictHostKeyChecking=no mojtaba@95.216.34.252 <<EOF
+          cd /apps/shopify/frontend-ai-shopping
+          git pull
+          docker compose down
+          docker compose build
+          docker compose up -d
+        EOF

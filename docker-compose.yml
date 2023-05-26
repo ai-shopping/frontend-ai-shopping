@@ -6,6 +6,12 @@ services:
     container_name: frontend
     working_dir: /app
     command: npm run preview
+    restart: unless-stopped
     ports:
       - "3000:3000"
-
+    networks:
+      - services
+networks: 
+  services:
+    name: ${APP_NAME:-smartshopping}_network
+    external: true
