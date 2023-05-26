@@ -1,5 +1,9 @@
 import { ACCESS_TOKEN, AUTH_PENDDING, PHONE_NUMBER, REFRESH_TOKEN } from "~/common/storage_keys"
 import { AUTH_URL } from "~/lib/const"
+import { BOT_URL } from "./const"
+import { getAuthData } from "./helper"
+import AuthResponseDto from "~/data/models/auth_response_dto"
+import { getAccessToken, refreshToken } from "./apis/auth"
 
 
 interface HeadersItem {
@@ -10,24 +14,11 @@ interface HeadersItem {
 async function refresh_token(onComplete: Function) {
     if(localStorage.getItem(AUTH_PENDDING) === null){
         localStorage.setItem(AUTH_PENDDING, "true")
-        await POST(`${AUTH_URL}/refresh-token?refreshToken=${localStorage.getItem(REFRESH_TOKEN)}`, { 'refreshToken': localStorage.getItem(REFRESH_TOKEN) }, true)
-        .then(async (r) => {
-            var data: any = await r?.json()
-    
-            localStorage.setItem(PHONE_NUMBER, data.phone_number)
-            localStorage.setItem(ACCESS_TOKEN, data.access_Token)
-            localStorage.setItem(REFRESH_TOKEN, data.refresh_Token)
-            localStorage.removeItem(AUTH_PENDDING)
-            onComplete()
-        }).catch((r) => {
-            localStorage.removeItem(PHONE_NUMBER)
-            localStorage.removeItem(ACCESS_TOKEN)
-            localStorage.removeItem(REFRESH_TOKEN)
-            location.reload()
-            localStorage.removeItem(AUTH_PENDDING)
-
-
-        })
+        if (localStorage.getItem(ACCESS_TOKEN) === null || localStorage.getItem(ACCESS_TOKEN) === undefined){
+            await getAccessToken()
+        }else{
+            await refreshToken()
+        }
     }
 }
 

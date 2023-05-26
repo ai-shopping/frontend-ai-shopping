@@ -75,3 +75,9 @@ export default {
     }
   },
 };
+
+// export const store = createStorefrontClient({
+//   publicStorefrontToken: "ba3240f06c19dc2843d9f9b9d4229e4f",
+//   storeDomain: `https://cbd-chat.myshopify.com`,
+//   storefrontApiVersion: "2023-04",
+// });

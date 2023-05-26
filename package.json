@@ -34,6 +34,7 @@
     "react-intersection-observer": "^9.4.1",
     "react-use": "^17.4.0",
     "schema-dts": "^1.1.0",
+    "shopify-api-node": "^3.12.5",
     "tiny-invariant": "^1.2.0",
     "typographic-base": "^1.0.4",
     "worktop": "^0.7.3"

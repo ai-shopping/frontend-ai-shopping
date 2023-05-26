@@ -21,6 +21,9 @@ import {
   CartLoading,
   Link,
 } from '~/components';
+import headerLogo from "../assets/icons/header-logo.svg"
+import desktopPerson from "../assets/icons/Desktop-person.svg"
+import desktopVector from "../assets/icons/Desktop-Vector.svg"
 import {useParams, Form, Await, useMatches} from '@remix-run/react';
 import {useWindowScroll} from 'react-use';
 import {Disclosure} from '@headlessui/react';
@@ -52,7 +55,7 @@ export function Layout({
           {children}
         </main>
       </div>
-      <Footer menu={layout?.footerMenu} />
+      {/* <Footer menu={layout?.footerMenu} /> */}
     </>
   );
 }
@@ -255,6 +258,26 @@ function DesktopHeader({
 }) {
   const params = useParams();
   const {y} = useWindowScroll();
+
+  return <>
+    <div className="top-header">
+            <div className="container">
+                <div className="row py-3">
+                    <div className="col-1">
+                       <img src={headerLogo} alt="" className="header-logo" />
+                    </div>
+                    <div className="col-10 welcome d-flex align-items-center m-0 justify-content-center">
+                    Welcome to your CBD Smart Store
+                    </div>
+                    <div className="col-1 d-flex align-items-center">                    
+                    <AccountLink />
+                    <CartCount isHome={isHome} openCart={openCart} />
+                    </div>
+                </div>
+            </div>
+        </div>
+  </>
+
   return (
     <header
       role="banner"
@@ -327,7 +350,7 @@ function AccountLink({className}: {className?: string}) {
     </Link>
   ) : (
     <Link to="/account/login" className={className}>
-      <IconLogin />
+      <img src={desktopPerson} alt="" className="me-3" />
     </Link>
   );
 }
@@ -370,7 +393,7 @@ function Badge({
   const BadgeCounter = useMemo(
     () => (
       <>
-        <IconBag />
+        <img src={desktopVector} alt="" />
         <div
           className={`${
             dark
