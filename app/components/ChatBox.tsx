@@ -4,18 +4,25 @@ import sendIcon from "../assets/icons/send.svg"
 import { Scrollbars } from 'react-custom-scrollbars';
 import { MessageDto, MessageType } from '~/data/models/message_dto';
 import { getProdcutApi, question } from '~/common/apis/products';
+import { ProductDto } from '~/data/models/product_dto';
+import Product from './Product';
 
 
 
 export default function ChatBox() {
   const [messages, setMessages] = useState<MessageDto[]>([]);
   const [currentMessage, setCurrentMessage] = useState<string>("")
-  // const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<ProductDto[]>([]);
 
   function getProducts(items:string[]) {
-    items.forEach(item => {
-      getProdcutApi(item)
-    })
+    let fetchProducts: Promise<ProductDto>[] = [];
+    items.forEach((item) => {
+      fetchProducts.push(getProdcutApi(item));
+    });
+    Promise.all(fetchProducts).then((products) => {
+      setProducts(products);
+    });
+
   }
 
   function scrollToEnd() {
@@ -85,17 +92,17 @@ export default function ChatBox() {
       </div>
 
       {/* @TODO: get product list for preview in store */}
-      {/* <div className='container mt-3 p-3'>
+      <div className='container mt-3 p-3'>
         <div className="product-list">
           <div className='row'>
-            {products.map((product) => (
+            {products.map((product: any) => (
               <div className='col-md-4'>
-                <Product key={product.id} name={product.name} />
+                <Product key={product?.id} name={product?.title} price={''} product={product} />
               </div>
             ))}
           </div>
         </div>
-      </div> */}
+      </div>
 
 
     </>

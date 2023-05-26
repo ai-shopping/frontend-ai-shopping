@@ -31,7 +31,7 @@ export async function question(message: string): Promise<AnswerDto | null> {
 
 export async function getProdcutApi(id: string) {
   let product_id = `gid://shopify/Product/${id.split(":")[1].toString()}`
-  var response = await store.storefront.query(`#graphql
+  var response: any = await store.storefront.query(`#graphql
   query getProductById($id: ID!) {
     product(id: $id) {
       id
@@ -48,6 +48,21 @@ export async function getProdcutApi(id: string) {
         nodes {
           ...Media
         }
+      },
+      variants(first: 1) {
+        nodes {
+          id
+          image {
+            url
+            altText
+            width
+            height
+          }
+          price {
+            amount
+            currencyCode
+          }
+        }
       }
     }
   }
@@ -58,5 +73,5 @@ export async function getProdcutApi(id: string) {
     }
   });
 
-  console.log(response)
+  return response.product
 }

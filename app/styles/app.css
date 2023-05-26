@@ -310,3 +310,7 @@ a, p {
   border: none;
 }
 
+
+.product-list img {
+  width: 100px;
+}
