@@ -25,7 +25,7 @@ import headerLogo from "../assets/icons/header-logo.svg"
 import desktopPerson from "../assets/icons/Desktop-person.svg"
 import desktopVector from "../assets/icons/Desktop-Vector.svg"
 import { useParams, Form, Await, useMatches } from '@remix-run/react';
-import { useWindowScroll } from 'react-use';
+import { useScrollbarWidth, useWindowScroll } from 'react-use';
 import { Disclosure } from '@headlessui/react';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useIsHydrated } from '~/hooks/useIsHydrated';
@@ -39,6 +39,14 @@ export function Layout({
   children: React.ReactNode;
   layout: LayoutData;
 }) {
+
+  const [ isMobile, setIsMobile ] = useState(false);
+
+  useEffect(() => {
+    console.log(window.innerWidth)
+    setIsMobile(window.innerWidth < 560);
+  }, []);
+
   return (
     <>
       <div className="flex flex-col min-h-screen">
@@ -50,6 +58,7 @@ export function Layout({
         <Header
           title={layout?.shop.name ?? 'Hydrogen'}
           menu={layout?.headerMenu}
+          isMobile = {isMobile}
         />
         <main role="main" id="mainContent" className="flex-grow">
           {children}
@@ -60,9 +69,8 @@ export function Layout({
   );
 }
 
-function Header({ title, menu }: { title: string; menu?: EnhancedMenu }) {
+function Header({ title, menu, isMobile }: { title: string; menu?: EnhancedMenu, isMobile: boolean}) {
   const isHome = useIsHomePath();
-  const [isMobile, setIsMobile] = useState(false);
 
   const {
     isOpen: isCartOpen,
@@ -79,17 +87,10 @@ function Header({ title, menu }: { title: string; menu?: EnhancedMenu }) {
   const addToCartFetchers = useCartFetchers('ADD_TO_CART');
 
   // toggle cart drawer when adding to cart
-  useEffect(() => {
-    if (isCartOpen || !addToCartFetchers.length) return;
-    openCart();
-
-    function handleResize() {
-      setIsMobile(window.innerWidth < 560);
-      console.log(window.innerWidth < 560)
-    }
-
-    document.addEventListener('keydown', handleResize);
-  }, [addToCartFetchers, isCartOpen, openCart]);
+  // useEffect(() => {
+  //   if (isCartOpen || !addToCartFetchers.length) return;
+  //   openCart();
+  // }, [addToCartFetchers, isCartOpen, openCart]);
 
   return (
     <>
@@ -98,7 +99,7 @@ function Header({ title, menu }: { title: string; menu?: EnhancedMenu }) {
         <MenuDrawer isOpen={isMenuOpen} onClose={closeMenu} menu={menu} />
       )}
 
-      {!isMobile ? <DesktopHeader
+      {!isMobile  ? <DesktopHeader
         isHome={isHome}
         title={title}
         menu={menu}
@@ -203,12 +204,12 @@ function MobileHeader({
         } flex lg:hidden items-center h-nav sticky backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-4 px-4 md:px-8`}
     >
       <div className="flex items-center justify-start w-full gap-4">
-        {/* <button
+        <button
           onClick={openMenu}
           className="relative flex items-center justify-center w-8 h-8"
         >
           <IconMenu color='#000'/>
-        </button> */}
+        </button>
         <Form
           method="get"
           action={params.locale ? `/${params.locale}/search` : '/search'}
@@ -262,7 +263,6 @@ function DesktopHeader({
   title: string;
 }) {
   const params = useParams();
-  const { y } = useWindowScroll();
 
   return <>
     <div className="top-header">

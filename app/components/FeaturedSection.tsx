@@ -12,7 +12,7 @@ export interface FeaturedData {
 
 export function FeaturedSection() {
   const {load, data} = useFetcher();
-  const path = usePrefixPathWithLocale('/featured-products');
+  const path = '/featured-products';
 
   useEffect(() => {
     load(path);
