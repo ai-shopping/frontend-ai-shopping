@@ -46,9 +46,7 @@ export function FeaturedProducts({
         .join('&'),
     [count, sortKey, query, reverse],
   );
-  const productsApiPath = usePrefixPathWithLocale(
-    `/api/products?${queryString}`,
-  );
+  const productsApiPath = `/api/products?${queryString}`;
 
   useEffect(() => {
     load(productsApiPath);

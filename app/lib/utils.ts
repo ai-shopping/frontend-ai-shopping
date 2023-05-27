@@ -273,7 +273,7 @@ export function getLocaleFromRequest(request: Request): I18nLocale {
 
 export function usePrefixPathWithLocale(path: string) {
   const [root] = useMatches();
-  const selectedLocale = root.data?.selectedLocale ?? DEFAULT_LOCALE;
+  const selectedLocale = root.data?.selectedLocale ?? '';
 
   return `${selectedLocale.pathPrefix}${
     path.startsWith('/') ? path : '/' + path

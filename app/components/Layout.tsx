@@ -83,9 +83,6 @@ function Header({ title, menu }: { title: string; menu?: EnhancedMenu }) {
     if (isCartOpen || !addToCartFetchers.length) return;
     openCart();
 
-
-    console.log(window.innerWidth < 560)
-
     function handleResize() {
       setIsMobile(window.innerWidth < 560);
       console.log(window.innerWidth < 560)
