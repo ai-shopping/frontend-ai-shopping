@@ -9,10 +9,10 @@ import Product from './Product';
 
 
 
-export default function ChatBox() {
+export default function ChatBox({baseProducts, selectProduct} : {baseProducts:ProductDto[]|null|undefined, selectProduct: (id:string) => void}) {
   const [messages, setMessages] = useState<MessageDto[]>([]);
   const [currentMessage, setCurrentMessage] = useState<string>("")
-  const [products, setProducts] = useState<ProductDto[]>([]);
+  const [products, setProducts] = useState<ProductDto[]>(baseProducts ?? []);
 
   function getProducts(items:string[]) {
     let fetchProducts: Promise<ProductDto>[] = [];
@@ -96,7 +96,10 @@ export default function ChatBox() {
         <div className="product-list">
           <div className='row'>
             {products.map((product: any) => (
-              <div className='col-md-4'>
+              <div className='col-md-4' onClick={(e) => {
+                let id = product.id.split("/")[product.id.split("/").length - 1]
+                selectProduct( product.id)
+              }}>
                 <Product key={product?.id} name={product?.title} price={''} product={product} />
               </div>
             ))}

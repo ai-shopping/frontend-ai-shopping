@@ -1,19 +1,9 @@
-
-import type {
-  ProductVariant,
-  SelectedOptionInput,
-  CollectionConnection,
-  Product as ProductType,
-  // Shop,
-  ProductConnection,
-  Shop,
-} from '@shopify/hydrogen/storefront-api-types';
 import { AppLoadContext } from "@shopify/remix-oxygen";
 import { MEDIA_FRAGMENT } from '~/data/fragments';
 import { BOT_URL } from "../const";
 import { POST } from '../requests';
 import { AnswerDto } from '~/data/models/answer_dto';
-import { store } from '../helper';
+import { getLocalStorageData, setLocalStorageData, store } from '../helper';
 
 
 export async function question(message: string): Promise<AnswerDto | null> {

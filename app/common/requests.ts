@@ -1,7 +1,7 @@
 import { ACCESS_TOKEN, AUTH_PENDDING, PHONE_NUMBER, REFRESH_TOKEN } from "~/common/storage_keys"
 import { AUTH_URL } from "~/lib/const"
 import { BOT_URL } from "./const"
-import { getAuthData } from "./helper"
+import { getLocalStorageData, setLocalStorageData } from "./helper"
 import AuthResponseDto from "~/data/models/auth_response_dto"
 import { getAccessToken, refreshToken } from "./apis/auth"
 

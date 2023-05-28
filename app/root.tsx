@@ -15,13 +15,13 @@ import {
   useMatches,
   useRouteError,
 } from '@remix-run/react';
-import {ShopifySalesChannel, Seo} from '@shopify/hydrogen';
-import {Layout} from '~/components';
-import {GenericError} from './components/GenericError';
-import {NotFound} from './components/NotFound';
+import { ShopifySalesChannel, Seo } from '@shopify/hydrogen';
+import { Layout } from '~/components';
+import { GenericError } from './components/GenericError';
+import { NotFound } from './components/NotFound';
 import styles from './styles/app.css';
 import favicon from '../public/favicon.svg';
-import {seoPayload} from '~/lib/seo.server';
+import { seoPayload } from '~/lib/seo.server';
 import {
   DEFAULT_LOCALE,
   parseMenu,
@@ -29,12 +29,15 @@ import {
   type EnhancedMenu,
 } from './lib/utils';
 import invariant from 'tiny-invariant';
-import {Shop, Cart} from '@shopify/hydrogen/storefront-api-types';
-import {useAnalytics} from './hooks/useAnalytics';
+import { Shop, Cart } from '@shopify/hydrogen/storefront-api-types';
+import { useAnalytics } from './hooks/useAnalytics';
+import 'animate.css';
+import { getAccessToken } from './common/apis/auth';
+import { useEffect } from 'react';
 
 export const links: LinksFunction = () => {
   return [
-    {rel: 'stylesheet', href: styles},
+    { rel: 'stylesheet', href: styles },
     {
       rel: 'preconnect',
       href: 'https://cdn.shopify.com',
@@ -43,19 +46,20 @@ export const links: LinksFunction = () => {
       rel: 'preconnect',
       href: 'https://shop.app',
     },
-    {rel: 'icon', type: 'image/svg+xml', href: favicon},
+    { rel: 'icon', type: 'image/svg+xml', href: favicon },
   ];
 };
 
-export async function loader({request, context}: LoaderArgs) {
+export async function loader({ request, context }: LoaderArgs) {
   const cartId = getCartId(request);
   const [customerAccessToken, layout] = await Promise.all([
     context.session.get('customerAccessToken'),
     getLayoutData(context),
   ]);
-  
-  console.log(context.session.get('customerAccessToken'))
-  const seo = seoPayload.root({shop: layout.shop, url: request.url});
+
+
+
+  const seo = seoPayload.root({ shop: layout.shop, url: request.url });
 
   return defer({
     isLoggedIn: Boolean(customerAccessToken),
@@ -77,12 +81,17 @@ export default function App() {
 
   useAnalytics(hasUserConsent, locale);
 
+  useEffect(() => {
+    getAccessToken()
+
+  }, [])
+
   return (
     <html lang={locale.language}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous"></link>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossOrigin="anonymous"></link>
         <Seo />
         <Meta />
         <Links />
@@ -96,13 +105,13 @@ export default function App() {
         </Layout>
         <ScrollRestoration />
         <Scripts />
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossOrigin="anonymous"></script>
       </body>
     </html>
   );
 }
 
-export function ErrorBoundary({error}: {error: Error}) {
+export function ErrorBoundary({ error }: { error: Error }) {
   const [root] = useMatches();
   const locale = root?.data?.selectedLocale ?? DEFAULT_LOCALE;
   const routeError = useRouteError();
@@ -136,7 +145,7 @@ export function ErrorBoundary({error}: {error: Error}) {
                 <NotFound type={pageType} />
               ) : (
                 <GenericError
-                  error={{message: `${routeError.status} ${routeError.data}`}}
+                  error={{ message: `${routeError.status} ${routeError.data}` }}
                 />
               )}
             </>
@@ -207,7 +216,7 @@ export interface LayoutData {
   cart?: Promise<Cart>;
 }
 
-async function getLayoutData({storefront}: AppLoadContext) {
+async function getLayoutData({ storefront }: AppLoadContext) {
   const HEADER_MENU_HANDLE = 'main-menu';
   const FOOTER_MENU_HANDLE = 'footer';
 
@@ -229,7 +238,7 @@ async function getLayoutData({storefront}: AppLoadContext) {
       - /blog/news/blog-post -> /news/blog-post
       - /collections/all -> /products
   */
-  const customPrefixes = {BLOG: '', CATALOG: 'products'};
+  const customPrefixes = { BLOG: '', CATALOG: 'products' };
 
   const headerMenu = data?.headerMenu
     ? parseMenu(data.headerMenu, customPrefixes)
@@ -239,7 +248,7 @@ async function getLayoutData({storefront}: AppLoadContext) {
     ? parseMenu(data.footerMenu, customPrefixes)
     : undefined;
 
-  return {shop: data.shop, headerMenu, footerMenu};
+  return { shop: data.shop, headerMenu, footerMenu };
 }
 
 const CART_QUERY = `#graphql
@@ -356,10 +365,10 @@ const CART_QUERY = `#graphql
   }
 `;
 
-export async function getCart({storefront}: AppLoadContext, cartId: string) {
+export async function getCart({ storefront }: AppLoadContext, cartId: string) {
   invariant(storefront, 'missing storefront client in cart query');
 
-  const {cart} = await storefront.query<{cart?: Cart}>(CART_QUERY, {
+  const { cart } = await storefront.query<{ cart?: Cart }>(CART_QUERY, {
     variables: {
       cartId,
       country: storefront.i18n.country,

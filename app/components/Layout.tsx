@@ -43,7 +43,6 @@ export function Layout({
   const [ isMobile, setIsMobile ] = useState(false);
 
   useEffect(() => {
-    console.log(window.innerWidth)
     setIsMobile(window.innerWidth < 560);
   }, []);
 

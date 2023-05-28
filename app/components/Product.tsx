@@ -8,7 +8,6 @@ interface ProductProps {
 }
 
 const Product = (props: ProductProps) => {
-  console.log(props)
   return <div className="container m-1 product-item">
     <div className="row">
         <div className="col-md-12 d-flex justify-content-center align-items-center p-0 m-0">
