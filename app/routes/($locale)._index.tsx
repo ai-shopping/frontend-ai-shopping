@@ -1,7 +1,7 @@
-import { Await, useLoaderData } from "@remix-run/react";
+import { Await, useLoaderData, useLocation, useSearchParams } from "@remix-run/react";
 import { Collection, ProductConnection } from "@shopify/hydrogen-react/storefront-api-types";
 import { LoaderArgs, json } from "@shopify/remix-oxygen";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import invariant from "tiny-invariant";
 import { getProdcutApi } from "~/common/apis/products";
 import { Skeleton, getPaginationVariables } from "~/components";
@@ -9,6 +9,7 @@ import ChatBox from "~/components/ChatBox";
 import ProductModal from "~/components/ProductModal";
 import { CACHE_SHORT, routeHeaders } from "~/data/cache";
 import { PRODUCT_CARD_FRAGMENT } from "~/data/fragments";
+import HomeContext from "~/domain/context/HomeContext";
 import { seoPayload } from "~/lib/seo.server";
 
 const PAGE_BY = 8;
@@ -74,7 +75,14 @@ export default function Homepage() {
       <Await resolve={products}>
         {(products) => {
           return <>
-            {selectedProduct !== "" ? <Modal productId={selectedProduct} state={modalState} onClose={() => {setModalState(false)}}/> : <></>}
+            {selectedProduct !== "" ? <HomeContext.Provider value={
+              {
+                onClose: () => {
+                  // location.href = location.href.split("?")[0]
+                  setModalState(false)
+                },
+              }
+            }><Modal productId={selectedProduct} state={modalState} onClose={() => actions.onClose(setModalState)}/></HomeContext.Provider> : <></>}
 
 
             {/* @TODO: enable this for test products when server not available */}
@@ -112,7 +120,9 @@ export default function Homepage() {
 
 function Modal({ productId, state, onClose }: { productId: string, state: boolean, onClose:() => void }) {
 
-  useEffect(() => {}, [state, productId])
+  useEffect(() => {
+    console.log("rerendering modal");
+  }, [state, productId])
 
   return <>
     <div className={`animate__animated product-modal ${state ? "animate__fadeIn" : "animate__fadeOut"}`} onClick={(e) => {
@@ -155,3 +165,9 @@ const ALL_PRODUCTS_QUERY = `#graphql
   }
   ${PRODUCT_CARD_FRAGMENT}
 `;
+
+export const actions = {
+  onClose: (setModalState:React.Dispatch<React.SetStateAction<boolean>>) => {
+    setModalState(false)
+  }
+}

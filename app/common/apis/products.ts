@@ -52,6 +52,18 @@ export async function getProdcutApi(id: string) {
             amount
             currencyCode
           }
+          compareAtPrice {
+            amount
+            currencyCode
+          }
+          selectedOptions {
+            name
+            value
+          }
+          product {
+            handle
+            title
+          }
         }
       }
     }

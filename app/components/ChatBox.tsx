@@ -6,6 +6,7 @@ import { MessageDto, MessageType } from '~/data/models/message_dto';
 import { getProdcutApi, question } from '~/common/apis/products';
 import { ProductDto } from '~/data/models/product_dto';
 import Product from './Product';
+import { Link, useLocation } from '@remix-run/react';
 
 
 
@@ -13,6 +14,12 @@ export default function ChatBox({baseProducts, selectProduct} : {baseProducts:Pr
   const [messages, setMessages] = useState<MessageDto[]>([]);
   const [currentMessage, setCurrentMessage] = useState<string>("")
   const [products, setProducts] = useState<ProductDto[]>(baseProducts ?? []);
+  
+  const {pathname} = useLocation();
+  const isLocalePathname = /\/[a-zA-Z]{2}-[a-zA-Z]{2}\//g.test(pathname);
+  const path = isLocalePathname
+    ? `/${pathname.split('/').slice(2).join('/')}`
+    : pathname;
 
   function getProducts(items:string[]) {
     let fetchProducts: Promise<ProductDto>[] = [];
@@ -100,7 +107,15 @@ export default function ChatBox({baseProducts, selectProduct} : {baseProducts:Pr
                 let id = product.id.split("/")[product.id.split("/").length - 1]
                 selectProduct( product.id)
               }}>
-                <Product key={product?.id} name={product?.title} price={''} product={product} />
+                <Link
+                  preventScrollReset
+                  prefetch="intent"
+                  replace
+                  to={`${path}`}
+                >
+                  <Product key={product?.id} name={product?.title} price={''} product={product} />
+                </Link>
+                
               </div>
             ))}
           </div>

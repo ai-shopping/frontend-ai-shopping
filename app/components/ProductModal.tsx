@@ -41,12 +41,10 @@ import type {
   ProductConnection,
 } from '@shopify/hydrogen/storefront-api-types';
 import { MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT } from '~/data/fragments';
-import type { Storefront } from '~/lib/type';
-import type { Product } from 'schema-dts';
-import { routeHeaders, CACHE_SHORT } from '~/data/cache';
-import { getProdcutApi } from '~/common/apis/products';
-import { ProductDto } from '~/data/models/product_dto';
+
+import { routeHeaders } from '~/data/cache';
 import { store } from '~/common/helper';
+import HomeContext from '~/domain/context/HomeContext';
 
 export const headers = routeHeaders;
 
@@ -92,7 +90,7 @@ export default function ProductModal({ productId, onClose }: { productId: string
   // const { product } = loader({ productId: productId });
 
   async function getData() {
-    console.log(productId);
+    console.log("get product: ",productId);
     return await store.storefront.query<{
       product: ProductType;
       shop: Shop;
@@ -152,7 +150,7 @@ export default function ProductModal({ productId, onClose }: { productId: string
                         />
                       )}
                     </div>
-                    <div onClick={() => { onClose() }}>
+                    <div>
                       <ProductForm product={product} shop={data.shop} />
                     </div>
                   </section>
@@ -170,44 +168,28 @@ export function ProductForm({ product, shop }: { product: ProductType, shop: Sho
 
   const [currentSearchParams] = useSearchParams();
   const { location } = useNavigation();
-
-  /**
-   * We update `searchParams` with in-flight request data from `location` (if available)
-   * to create an optimistic UI, e.g. check the product option before the
-   * request has completed.
-   */
-  // const searchParams = useMemo(() => {
-  //   return location
-  //     ? new URLSearchParams(location.search)
-  //     : currentSearchParams;
-  // }, [currentSearchParams, location]);
-
   const firstVariant = product.variants.nodes[0];
 
-  /**
-   * We're making an explicit choice here to display the product options
-   * UI with a default variant, rather than wait for the user to select
-   * options first. Developers are welcome to opt-out of this behavior.
-   * By default, the first variant's options are used.
-   */
-  // const searchParamsWithDefaults = useMemo<URLSearchParams>(() => {
-  //   const clonedParams = new URLSearchParams(searchParams);
+  const searchParams = useMemo(() => {
+    return location
+      ? new URLSearchParams(location.search)
+      : currentSearchParams;
+  }, [currentSearchParams, location]);
 
-  //   for (const { name, value } of firstVariant.selectedOptions) {
-  //     if (!searchParams.has(name)) {
-  //       clonedParams.set(name, value);
-  //     }
-  //   }
+  const searchParamsWithDefaults = useMemo<URLSearchParams>(() => {
+    const clonedParams = new URLSearchParams(searchParams);
 
-  //   return clonedParams;
-  // }, [searchParams, firstVariant.selectedOptions]);
+    for (const { name, value } of firstVariant.selectedOptions) {
+      if (!searchParams.has(name)) {
+        clonedParams.set(name, value);
+      }
+    }
 
-  /**
-   * Likewise, we're defaulting to the first variant for purposes
-   * of add to cart if there is none returned from the loader.
-   * A developer can opt out of this, too.
-   */
-  const selectedVariant = firstVariant;
+    return clonedParams;
+  }, [searchParams, firstVariant.selectedOptions]);
+
+
+  const selectedVariant = firstVariant
   const isOutOfStock = !selectedVariant?.availableForSale;
 
   const isOnSale =
@@ -224,9 +206,15 @@ export function ProductForm({ product, shop }: { product: ProductType, shop: Sho
     price: selectedVariant.price.amount,
   }
 
+  useEffect(() => {}, [location])
+
   return (
     <div className="grid gap-10">
       <div className="grid gap-4">
+        <ProductOptions
+          options={product.options}
+          searchParamsWithDefaults={searchParamsWithDefaults}
+        />
         {selectedVariant && (
           <div className="grid items-stretch gap-4">
             {isOutOfStock ? (
@@ -234,40 +222,44 @@ export function ProductForm({ product, shop }: { product: ProductType, shop: Sho
                 <Text>Sold out</Text>
               </Button>
             ) : (
-              <AddToCartButton
-                lines={[
-                  {
-                    merchandiseId: selectedVariant.id,
-                    quantity: 1,
-                  },
-                ]}
-                variant="primary"
-                data-test="add-to-cart"
-                analytics={{
-                  products: [productAnalytics],
-                  totalValue: parseFloat(productAnalytics.price),
-                }}
-              >
-                <Text
-                  as="span"
-                  className="flex items-center justify-center gap-2"
-                >
-                  <span>Add to Cart</span> <span>·</span>{' '}
-                  <Money
-                    withoutTrailingZeros
-                    data={selectedVariant?.price!}
-                    as="span"
-                  />
-                  {isOnSale && (
-                    <Money
-                      withoutTrailingZeros
-                      data={selectedVariant?.compareAtPrice!}
+              <HomeContext.Consumer>
+                {state => <div onClick={() => {state.onClose()}}>
+                  <AddToCartButton
+                    lines={[
+                      {
+                        merchandiseId: selectedVariant.id,
+                        quantity: 1,
+                      },
+                    ]}
+                    variant="primary"
+                    data-test="add-to-cart"
+                    analytics={{
+                      products: [productAnalytics],
+                      totalValue: parseFloat(productAnalytics.price),
+                    }}
+                  >
+                    <Text
                       as="span"
-                      className="opacity-50 strike"
-                    />
-                  )}
-                </Text>
-              </AddToCartButton>
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <span>Add to Cart</span> <span>·</span>{' '}
+                      <Money
+                        withoutTrailingZeros
+                        data={selectedVariant?.price!}
+                        as="span"
+                      />
+                      {isOnSale && (
+                        <Money
+                          withoutTrailingZeros
+                          data={selectedVariant?.compareAtPrice!}
+                          as="span"
+                          className="opacity-50 strike"
+                        />
+                      )}
+                    </Text>
+                  </AddToCartButton>
+                </div>}
+              </HomeContext.Consumer>
             )}
             {/* {!isOutOfStock && (
               <ShopPayButton
@@ -332,10 +324,170 @@ function ProductDetail({
   );
 }
 
+function ProductOptions({
+  options,
+  searchParamsWithDefaults,
+}: {
+  options: ProductType['options'];
+  searchParamsWithDefaults: URLSearchParams;
+}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  return (
+    <>
+      {options
+        .filter((option) => option.values.length > 1)
+        .map((option) => (
+          <div
+            key={option.name}
+            className="flex flex-col flex-wrap mb-4 gap-y-2 last:mb-0"
+          >
+            <Heading as="legend" size="lead" className="min-w-[4rem]">
+              {option.name}
+            </Heading>
+            <div className="flex flex-wrap items-baseline gap-4">
+              {/**
+               * First, we render a bunch of <Link> elements for each option value.
+               * When the user clicks one of these buttons, it will hit the loader
+               * to get the new data.
+               *
+               * If there are more than 7 values, we render a dropdown.
+               * Otherwise, we just render plain links.
+               */}
+              {option.values.length > 7 ? (
+                <div className="relative w-full">
+                  <Listbox>
+                    {({ open }) => (
+                      <>
+                        <Listbox.Button
+                          ref={closeRef}
+                          className={clsx(
+                            'flex items-center justify-between w-full py-3 px-4 border border-primary',
+                            open
+                              ? 'rounded-b md:rounded-t md:rounded-b-none'
+                              : 'rounded',
+                          )}
+                        >
+                          <span>
+                            {searchParamsWithDefaults.get(option.name)}
+                          </span>
+                          <IconCaret direction={open ? 'up' : 'down'} />
+                        </Listbox.Button>
+                        <Listbox.Options
+                          className={clsx(
+                            'border-primary bg-contrast absolute bottom-12 z-30 grid h-48 w-full overflow-y-scroll rounded-t border px-2 py-2 transition-[max-height] duration-150 sm:bottom-auto md:rounded-b md:rounded-t-none md:border-t-0 md:border-b',
+                            open ? 'max-h-48' : 'max-h-0',
+                          )}
+                        >
+                          {option.values.map((value) => (
+                            <Listbox.Option
+                              key={`option-${option.name}-${value}`}
+                              value={value}
+                            >
+                              {({ active }) => (
+                                <ProductOptionLink
+                                  optionName={option.name}
+                                  optionValue={value}
+                                  className={clsx(
+                                    'text-primary w-full p-2 transition rounded flex justify-start items-center text-left cursor-pointer',
+                                    active && 'bg-primary/10',
+                                  )}
+                                  searchParams={searchParamsWithDefaults}
+                                  onClick={() => {
+                                    if (!closeRef?.current) return;
+                                    closeRef.current.click();
+                                  }}
+                                >
+                                  {value}
+                                  {searchParamsWithDefaults.get(option.name) ===
+                                    value && (
+                                      <span className="ml-2">
+                                        <IconCheck />
+                                      </span>
+                                    )}
+                                </ProductOptionLink>
+                              )}
+                            </Listbox.Option>
+                          ))}
+                        </Listbox.Options>
+                      </>
+                    )}
+                  </Listbox>
+                </div>
+              ) : (
+                <>
+                  {option.values.map((value) => {
+                    const checked =
+                      searchParamsWithDefaults.get(option.name) === value;
+                    const id = `option-${option.name}-${value}`;
+
+                    return (
+                      <Text key={id}>
+                        <ProductOptionLink
+                          optionName={option.name}
+                          optionValue={value}
+                          searchParams={searchParamsWithDefaults}
+                          className={clsx(
+                            'leading-none py-1 border-b-[1.5px] cursor-pointer transition-all duration-200',
+                            checked ? 'border-primary/50' : 'border-primary/0',
+                          )}
+                        />
+                      </Text>
+                    );
+                  })}
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+    </>
+  );
+}
+
+function ProductOptionLink({
+  optionName,
+  optionValue,
+  searchParams,
+  children,
+  ...props
+}: {
+  optionName: string;
+  optionValue: string;
+  searchParams: URLSearchParams;
+  children?: ReactNode;
+  [key: string]: any;
+}) {
+  const { pathname } = useLocation();
+  const isLocalePathname = /\/[a-zA-Z]{2}-[a-zA-Z]{2}\//g.test(pathname);
+  // fixes internalized pathname
+  const path = isLocalePathname
+    ? `/${pathname.split('/').slice(2).join('/')}`
+    : pathname;
+
+  const clonedSearchParams = new URLSearchParams(searchParams);
+  clonedSearchParams.set(optionName, optionValue);
+
+  return (
+    <Link
+      {...props}
+      preventScrollReset
+      prefetch="intent"
+      replace
+      to={`${path}?${clonedSearchParams.toString()}`}
+    >
+      {children ?? optionValue}
+    </Link>
+  );
+}
+
+
 const PRODUCT_VARIANT_FRAGMENT = `#graphql
   fragment ProductVariantFragment on ProductVariant {
     id
     availableForSale
+    selectedOptions {
+      name
+      value
+    }
     image {
       id
       url
