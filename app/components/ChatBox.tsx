@@ -22,14 +22,16 @@ export default function ChatBox({baseProducts, selectProduct} : {baseProducts:Pr
     : pathname;
 
   function getProducts(items:string[]) {
-    let fetchProducts: Promise<ProductDto>[] = [];
-    items.forEach((item) => {
+    let fetchProducts: any = [];
+    items.forEach(async (item) => {
+      // let response = await getProdcutApi(item)
       fetchProducts.push(getProdcutApi(item));
+      // setProducts(fetchProducts);
     });
+
     Promise.all(fetchProducts).then((products) => {
       setProducts(products);
     });
-
   }
 
   function scrollToEnd() {

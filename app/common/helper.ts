@@ -21,3 +21,6 @@ export const store = createStorefrontClient({
   storeDomain: `https://cbd-chat.myshopify.com`,
   storefrontApiVersion: "2023-04",
 });
+
+export const getStorefrontApiUrl = store.storefront.getApiUrl;
+export const getPrivateTokenHeaders = store.storefront.getPublicTokenHeaders;

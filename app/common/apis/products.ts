@@ -3,7 +3,7 @@ import { MEDIA_FRAGMENT } from '~/data/fragments';
 import { BOT_URL } from "../const";
 import { POST } from '../requests';
 import { AnswerDto } from '~/data/models/answer_dto';
-import { getLocalStorageData, setLocalStorageData, store } from '../helper';
+import { getLocalStorageData, getPrivateTokenHeaders, getStorefrontApiUrl, setLocalStorageData, store } from '../helper';
 
 
 export async function question(message: string): Promise<AnswerDto | null> {
@@ -19,61 +19,69 @@ export async function question(message: string): Promise<AnswerDto | null> {
   }
 }
 
-export async function getProdcutApi(id: string) {
+export async function getProdcutApi(id: string) : Promise<any> {
   let product_id = `gid://shopify/Product/${id.split(":")[1].toString()}`
-  var response: any = await store.storefront.query(`#graphql
-  query getProductById($id: ID!) {
-    product(id: $id) {
-      id
-      title
-      vendor
-      handle
-      descriptionHtml
-      description
-      options {
-        name
-        values
-      },
-      media(first: 7) {
-        nodes {
-          ...Media
-        }
-      },
-      variants(first: 1) {
-        nodes {
+
+  const response = await fetch(getStorefrontApiUrl(), {
+    body: JSON.stringify({
+      // A Storefront API query
+      query: `query getProductById($id: ID!) {
+        product(id: $id) {
           id
-          image {
-            url
-            altText
-            width
-            height
-          }
-          price {
-            amount
-            currencyCode
-          }
-          compareAtPrice {
-            amount
-            currencyCode
-          }
-          selectedOptions {
+          title
+          vendor
+          handle
+          descriptionHtml
+          description
+          options {
             name
-            value
-          }
-          product {
-            handle
-            title
+            values
+          },
+          media(first: 7) {
+            nodes {
+              ...Media
+            }
+          },
+          variants(first: 1) {
+            nodes {
+              id
+              image {
+                url
+                altText
+                width
+                height
+              }
+              price {
+                amount
+                currencyCode
+              }
+              compareAtPrice {
+                amount
+                currencyCode
+              }
+              selectedOptions {
+                name
+                value
+              }
+              product {
+                handle
+                title
+              }
+            }
           }
         }
       }
-    }
-  }
-  ${MEDIA_FRAGMENT}
-  `, {
-    variables: {
-      id: product_id
-    }
+       ${MEDIA_FRAGMENT}
+       `,
+       variables: {
+        "id": product_id
+       }
+    }),
+    // When possible, add the 'buyerIp' property.
+    headers: getPrivateTokenHeaders(),
+    method: 'POST',
   });
 
-  return response.product
+  const json = await response.json<any>();
+  return json['data']['product']
 }

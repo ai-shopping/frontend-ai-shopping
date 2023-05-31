@@ -1,8 +1,6 @@
-import { type ReactNode, useRef, Suspense, useMemo, useState, useEffect } from 'react';
+import { type ReactNode, useRef, Suspense, useMemo, useEffect } from 'react';
 import { Disclosure, Listbox } from '@headlessui/react';
-import { defer, type LoaderArgs } from '@shopify/remix-oxygen';
 import {
-  useLoaderData,
   Await,
   useSearchParams,
   useLocation,
@@ -10,10 +8,8 @@ import {
 } from '@remix-run/react';
 
 import {
-  AnalyticsPageType,
   Money,
   ShopifyAnalyticsProduct,
-  ShopPayButton,
 } from '@shopify/hydrogen';
 import {
   Heading,
@@ -21,7 +17,6 @@ import {
   IconCheck,
   IconClose,
   ProductGallery,
-  ProductSwimlane,
   Section,
   Skeleton,
   Text,
@@ -30,81 +25,34 @@ import {
   Button,
 } from '~/components';
 import { getExcerpt } from '~/lib/utils';
-import { seoPayload } from '~/lib/seo.server';
-import invariant from 'tiny-invariant';
 import clsx from 'clsx';
 import type {
-  ProductVariant,
-  SelectedOptionInput,
   Product as ProductType,
   Shop,
-  ProductConnection,
 } from '@shopify/hydrogen/storefront-api-types';
-import { MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT } from '~/data/fragments';
+import { MEDIA_FRAGMENT } from '~/data/fragments';
 
-import { routeHeaders } from '~/data/cache';
-import { store } from '~/common/helper';
+import { getPrivateTokenHeaders, getStorefrontApiUrl, store } from '~/common/helper';
 import HomeContext from '~/domain/context/HomeContext';
-
-export const headers = routeHeaders;
-
-export async function loader({ productId }: { productId: string }) {
-
-  // if (!product?.id) {
-  //   throw new Response('product', { status: 404 });
-  // }
-
-  // const firstVariant = product.variants.nodes[0];
-  // const selectedVariant = product.selectedVariant ?? firstVariant;
-
-  // const productAnalytics: ShopifyAnalyticsProduct = {
-  //   productGid: product.id,
-  //   variantGid: selectedVariant.id,
-  //   name: product.title,
-  //   variantName: selectedVariant.title,
-  //   brand: product.vendor,
-  //   price: selectedVariant.price.amount,
-  // };
-
-  // return defer(
-  //   {
-  //     product,
-  //     shop,
-  //     storeDomain: shop.primaryDomain.url,
-  //     analytics: {
-  //       pageType: AnalyticsPageType.product,
-  //       resourceId: product.id,
-  //       products: [productAnalytics],
-  //       totalValue: parseFloat(selectedVariant.price.amount),
-  //     },
-  //   },
-  //   {
-  //     headers: {
-  //       'Cache-Control': CACHE_SHORT,
-  //     },
-  //   },
-  // );
-}
-
 export default function ProductModal({ productId, onClose }: { productId: string, onClose: () => void }) {
-  // const { product } = loader({ productId: productId });
 
   async function getData() {
-    console.log("get product: ",productId);
-    return await store.storefront.query<{
-      product: ProductType;
-      shop: Shop;
-    }>(PRODUCT_QUERY, {
-      variables: {
-        id: productId
-      },
-    })
-  }
 
-  // useEffect(() => {
-  //   getData()
-  // }, [])
-  // return <></>
+    const response = await fetch(getStorefrontApiUrl(), {
+      body: JSON.stringify({
+        query: PRODUCT_QUERY,
+         variables: {
+          "id": productId
+         }
+      }),
+      // When possible, add the 'buyerIp' property.
+      headers: getPrivateTokenHeaders(),
+      method: 'POST',
+    });
+    
+    let data = await response.json<any>()
+    return data['data']
+  }
 
   return (
     <>
@@ -261,13 +209,6 @@ export function ProductForm({ product, shop }: { product: ProductType, shop: Sho
                 </div>}
               </HomeContext.Consumer>
             )}
-            {/* {!isOutOfStock && (
-              <ShopPayButton
-                width="100%"
-                variantIds={[selectedVariant?.id!]}
-                storeDomain={shop.primaryDomain.host}
-              />
-            )} */}
           </div>
         )}
       </div>
@@ -345,14 +286,6 @@ function ProductOptions({
               {option.name}
             </Heading>
             <div className="flex flex-wrap items-baseline gap-4">
-              {/**
-               * First, we render a bunch of <Link> elements for each option value.
-               * When the user clicks one of these buttons, it will hit the loader
-               * to get the new data.
-               *
-               * If there are more than 7 values, we render a dropdown.
-               * Otherwise, we just render plain links.
-               */}
               {option.values.length > 7 ? (
                 <div className="relative w-full">
                   <Listbox>
@@ -458,7 +391,6 @@ function ProductOptionLink({
 }) {
   const { pathname } = useLocation();
   const isLocalePathname = /\/[a-zA-Z]{2}-[a-zA-Z]{2}\//g.test(pathname);
-  // fixes internalized pathname
   const path = isLocalePathname
     ? `/${pathname.split('/').slice(2).join('/')}`
     : pathname;
